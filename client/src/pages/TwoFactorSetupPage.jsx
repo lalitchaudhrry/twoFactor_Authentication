@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ShieldCheck, QrCode } from "lucide-react";
-import { setup2FA, verify2FA } from "../services/api";
+import { setup2FA, verify2FASetup } from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 
@@ -78,7 +78,8 @@ export default function TwoFactorSetupPage() {
         <button
   onClick={async () => {
     try {
-      const data = await verify2FA(userId, otp);
+      const data = await verify2FASetup(userId, otp);
+
 
       // ✅ Save JWT if returned
       if (data.token) {

@@ -1,90 +1,90 @@
 import speakeasy from "speakeasy";
 import QRCode from "qrcode";
-import User from "../models/User.js";
 import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 /**
- * SETUP 2FA
- * POST /api/2fa/setup
+ * SETUP 2FA (QR generation)
  */
 export const setup2FA = async (req, res) => {
   const { userId } = req.body;
 
-  try {
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+  const user = await User.findById(userId);
+  if (!user) return res.status(404).json({ message: "User not found" });
 
-    const secret = speakeasy.generateSecret({
-      name: "AccessControlProject"
-    });
-
-    user.twoFactorSecret = secret.base32;
-    await user.save();
-
-    const qrCode = await QRCode.toDataURL(secret.otpauth_url);
-
-    res.json({
-      qrCode,               // base64 image
-      secret: secret.base32 // manual entry key
-    });
-
-  } catch (err) {
-    res.status(500).json({ message: "2FA setup failed" });
+  // ❗ Prevent regenerating secret
+  if (user.isTwoFactorEnabled) {
+    return res.status(400).json({ message: "2FA already enabled" });
   }
+
+  const secret = speakeasy.generateSecret({
+    name: `AccessControl (${user.email})`,
+  });
+
+  user.twoFactorSecret = secret.base32;
+  await user.save();
+
+  const qrCode = await QRCode.toDataURL(secret.otpauth_url);
+
+  res.json({
+    qrCode,
+    secret: secret.base32,
+  });
 };
 
 /**
- * VERIFY 2FA
- * POST /api/2fa/verify
+ * VERIFY 2FA DURING SETUP
  */
-/**
- * VERIFY 2FA
- * POST /api/2fa/verify
- */
-export const verify2FA = async (req, res) => {
+export const verify2FASetup = async (req, res) => {
   const { userId, token } = req.body;
 
-  try {
-    const user = await User.findById(userId);
-    if (!user || !user.twoFactorSecret) {
-      return res.status(404).json({ message: "User not found" });
-    }
+  const user = await User.findById(userId);
+  if (!user) return res.status(404).json({ message: "User not found" });
 
-    const verified = speakeasy.totp.verify({
-      secret: user.twoFactorSecret,
-      encoding: "base32",
-      token,
-      window: 1,
-    });
+  const verified = speakeasy.totp.verify({
+    secret: user.twoFactorSecret,
+    encoding: "base32",
+    token,
+    window: 1,
+  });
 
-    if (!verified) {
-      return res.status(400).json({ message: "Invalid OTP" });
-    }
-
-    // ✅ Enable 2FA if not already enabled
-    if (!user.isTwoFactorEnabled) {
-      user.isTwoFactorEnabled = true;
-      await user.save();
-    }
-
-    // ✅ ISSUE JWT HERE (THIS IS WHAT YOU ASKED)
-    const jwtToken = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    return res.json({
-      message: "2FA verified",
-      token: jwtToken,
-      user: {
-        id: user._id,
-        email: user.email,
-      },
-    });
-
-  } catch (err) {
-    res.status(500).json({ message: "Verification failed" });
+  if (!verified) {
+    return res.status(400).json({ message: "Invalid OTP" });
   }
+
+  user.isTwoFactorEnabled = true;
+  await user.save();
+
+  res.json({ message: "2FA enabled successfully" });
 };
 
+/**
+ * VERIFY 2FA DURING LOGIN
+ */
+export const verify2FALogin = async (req, res) => {
+  const { userId, token } = req.body;
+
+  const user = await User.findById(userId);
+  if (!user || !user.isTwoFactorEnabled) {
+    return res.status(400).json({ message: "2FA not enabled" });
+  }
+
+  const verified = speakeasy.totp.verify({
+    secret: user.twoFactorSecret,
+    encoding: "base32",
+    token,
+    window: 1,
+  });
+
+  if (!verified) {
+    return res.status(401).json({ message: "Invalid authentication code" });
+  }
+
+  const jwtToken = jwt.sign(
+    { id: user._id },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  );
+
+  res.json({ token: jwtToken });
+};

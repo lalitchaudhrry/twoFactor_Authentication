@@ -43,8 +43,19 @@ export async function setup2FA(userId) {
   return res.json();
 }
 
-export async function verify2FA(userId, token) {
-  const res = await fetch(`${API_URL}/2fa/verify`, {
+export async function verify2FASetup(userId, token) {
+  const res = await fetch(`${API_URL}/2fa/verify-setup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, token }),
+  });
+
+  if (!res.ok) throw new Error("Invalid OTP");
+  return res.json();
+}
+
+export async function verify2FALogin(userId, token) {
+  const res = await fetch(`${API_URL}/2fa/verify-login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ userId, token }),
