@@ -4,6 +4,8 @@ import AuthPage from "./pages/AuthPage";
 import Dashboard2FA from "./pages/Dashboard2FA";
 import TwoFactorSetupPage from "./pages/TwoFactorSetupPage";
 import TwoFactorPage from "./pages/TwoFactorPage";
+import TwoFactorSuccessPage from "./pages/TwoFactorSuccessPage";
+
 
 export default function App() {
   return (
@@ -20,6 +22,8 @@ export default function App() {
 
         {/* 2FA verification during login */}
         <Route path="/2fa/verify" element={<TwoFactorPage />} />
+        <Route path="/2fa/success" element={<TwoFactorSuccessPage />} />
+
       </Routes>
     </BrowserRouter>
   );

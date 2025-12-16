@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
 import { ShieldCheck, QrCode } from "lucide-react";
 import { setup2FA, verify2FA } from "../services/api";
+import { useNavigate } from "react-router-dom";
+
 
 export default function TwoFactorSetupPage() {
+  const navigate = useNavigate();
+
   const [otp, setOtp] = useState("");
   const [qrCode, setQrCode] = useState("");
   const [secret, setSecret] = useState("");
 
-  const userId = "demo-user-id"; // later comes from auth/JWT
+  const userId = localStorage.getItem("userId");
+
 
   useEffect(() => {
     async function init2FA() {
@@ -71,18 +76,26 @@ export default function TwoFactorSetupPage() {
 
         {/* Action Button */}
         <button
-          onClick={async () => {
-            try {
-              await verify2FA(userId, otp);
-              alert("2FA enabled successfully");
-            } catch (err) {
-              alert("Invalid code");
-            }
-          }}
-          className="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary/90 transition"
-        >
-          Verify & Enable
-        </button>
+  onClick={async () => {
+    try {
+      const data = await verify2FA(userId, otp);
+
+      // ✅ Save JWT if returned
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+
+      // ✅ Redirect to success page
+      navigate("/2fa/success");
+    } catch (err) {
+      alert("Invalid code");
+    }
+  }}
+  className="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary/90 transition"
+>
+  Verify & Enable
+</button>
+
 
         {/* Footer */}
         <p className="text-xs text-text-secondary text-center">

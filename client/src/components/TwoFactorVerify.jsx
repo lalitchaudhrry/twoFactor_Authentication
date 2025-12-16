@@ -1,20 +1,34 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import OtpInput from "./OtpInput";
+import { verify2FA } from "../services/api";
 
 export default function TwoFactorVerify() {
   const [otp, setOtp] = useState(Array(6).fill(""));
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleVerify = () => {
+  const userId = localStorage.getItem("userId"); // set during login
+
+  const handleVerify = async () => {
     const code = otp.join("");
+
     if (code.length !== 6) {
       setError("Please enter the 6-digit code.");
       return;
     }
 
-    // Backend will be wired later
-    console.log("OTP Entered:", code);
-    setError("");
+    try {
+      const data = await verify2FA(userId, code);
+
+      // ✅ Save JWT
+      localStorage.setItem("token", data.token);
+
+      // ✅ Redirect to dashboard
+      navigate("/dashboard");
+    } catch (err) {
+      setError("Invalid authentication code.");
+    }
   };
 
   return (
@@ -26,8 +40,7 @@ export default function TwoFactorVerify() {
             Two-Factor Authentication
           </h1>
           <p className="text-text-secondary mb-6">
-            Open your authenticator app
-            and enter the 6-digit code to continue.
+            Open your authenticator app and enter the 6-digit code to continue.
           </p>
         </div>
       </div>
