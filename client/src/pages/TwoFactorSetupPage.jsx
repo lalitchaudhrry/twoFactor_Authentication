@@ -12,7 +12,6 @@ export default function TwoFactorSetupPage() {
   const userId = localStorage.getItem("userId");
 
   useEffect(() => {
-    // 🚫 If already enabled → never show setup again
     if (localStorage.getItem("is2FAEnabled") === "true") {
       navigate("/dashboard");
       return;
@@ -27,11 +26,13 @@ export default function TwoFactorSetupPage() {
     init2FA();
   }, [userId, navigate]);
 
-  async function handleVerify() {
+  async function handleSubmit(e) {
+    e.preventDefault();
+
     try {
       await verify2FASetup(userId, otp);
 
-      // ✅ THIS IS CRITICAL
+      // mark 2FA enabled locally
       localStorage.setItem("is2FAEnabled", "true");
 
       navigate("/2fa/success");
@@ -43,6 +44,7 @@ export default function TwoFactorSetupPage() {
   return (
     <div className="min-h-screen bg-surface-base flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-surface-card rounded-2xl shadow-lg p-8 space-y-6">
+
         <div className="flex items-center gap-3">
           <ShieldCheck className="text-primary" size={28} />
           <h1 className="text-2xl font-semibold text-text-primary">
@@ -60,20 +62,27 @@ export default function TwoFactorSetupPage() {
           </code>
         </div>
 
-        <input
-          type="text"
-          maxLength="6"
-          value={otp}
-          onChange={(e) => setOtp(e.target.value)}
-          className="w-full text-center text-lg tracking-widest border rounded-lg"
-        />
+        {/* ✅ FORM START */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            maxLength="6"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            className="w-full text-center text-lg tracking-widest border rounded-lg"
+            placeholder="123456"
+            autoFocus
+          />
 
-        <button
-          onClick={handleVerify}
-          className="w-full bg-primary text-white py-2 rounded-lg"
-        >
-          Verify & Enable
-        </button>
+          <button
+            type="submit"
+            className="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary/90 transition"
+          >
+            Verify & Enable
+          </button>
+        </form>
+        {/* ✅ FORM END */}
+
       </div>
     </div>
   );

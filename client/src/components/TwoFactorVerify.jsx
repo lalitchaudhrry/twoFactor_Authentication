@@ -10,7 +10,9 @@ export default function TwoFactorVerify() {
 
   const userId = localStorage.getItem("userId");
 
-  const handleVerify = async () => {
+  const handleVerify = async (e) => {
+    e.preventDefault(); // 🔑 enables Enter key submit
+
     try {
       const data = await verify2FALogin(userId, otp.join(""));
       localStorage.setItem("token", data.token);
@@ -35,20 +37,25 @@ export default function TwoFactorVerify() {
       </div>
 
       <div className="flex w-full md:w-1/2 items-center justify-center">
-        <div className="w-full max-w-md p-8">
+        <form
+          onSubmit={handleVerify}
+          className="w-full max-w-md p-8"
+        >
           <OtpInput otp={otp} setOtp={setOtp} />
 
           {error && (
-            <p className="text-error text-sm text-center mt-4">{error}</p>
+            <p className="text-error text-sm text-center mt-4">
+              {error}
+            </p>
           )}
 
           <button
-            onClick={handleVerify}
+            type="submit"
             className="w-full mt-6 py-3 rounded-lg bg-primary text-white font-semibold"
           >
             Verify Code
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );
