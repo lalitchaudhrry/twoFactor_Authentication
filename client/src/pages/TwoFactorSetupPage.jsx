@@ -17,16 +17,25 @@ export default function TwoFactorSetupPage() {
   useEffect(() => {
     async function init2FA() {
       try {
+        // OPTIONAL (recommended): fetch user profile
+        const isEnabled = localStorage.getItem("is2FAEnabled");
+  
+        if (isEnabled === "true") {
+          navigate("/dashboard");
+          return;
+        }
+  
         const data = await setup2FA(userId);
-        setQrCode(data.qrCode); // base64 image
+        setQrCode(data.qrCode);
         setSecret(data.secret);
       } catch (err) {
         console.error("2FA setup failed", err);
       }
     }
-
+  
     init2FA();
-  }, [userId]);
+  }, [userId, navigate]);
+  
 
   return (
     <div className="min-h-screen bg-surface-base flex items-center justify-center p-6">

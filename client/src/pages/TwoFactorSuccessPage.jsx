@@ -6,19 +6,15 @@ export default function TwoFactorSuccessPage() {
 
   return (
     <div className="min-h-screen bg-surface-base flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-surface-card rounded-2xl shadow-lg p-8 text-center space-y-6 border border-border-subtle">
-        
-        <div className="flex justify-center">
-          <ShieldCheck size={48} className="text-success" />
-        </div>
+      <div className="w-full max-w-md bg-surface-card rounded-2xl shadow-lg p-8 space-y-6 text-center">
+        <ShieldCheck size={48} className="mx-auto text-success" />
 
         <h1 className="text-2xl font-semibold text-text-primary">
           Two-Factor Authentication Enabled
         </h1>
 
-        <p className="text-text-secondary">
-          Your account is now protected with an extra layer of security.
-          You’ll need a one-time code from your authenticator app every time you log in.
+        <p className="text-text-secondary text-sm">
+          Your account is now protected with Google Authenticator.
         </p>
 
         <button
@@ -28,6 +24,15 @@ export default function TwoFactorSuccessPage() {
           Go to Dashboard
         </button>
 
+        <button
+          onClick={() => {
+            localStorage.clear();
+            navigate("/");
+          }}
+          className="w-full border border-border-subtle py-2 rounded-lg text-text-primary"
+        >
+          Log out & Login again
+        </button>
       </div>
     </div>
   );
