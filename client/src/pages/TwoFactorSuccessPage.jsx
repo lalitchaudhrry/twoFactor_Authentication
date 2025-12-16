@@ -31,7 +31,7 @@ export default function TwoFactorSuccessPage() {
           }}
           className="w-full border border-border-subtle py-2 rounded-lg text-text-primary"
         >
-          Log out & Login again
+          Log out
         </button>
       </div>
     </div>

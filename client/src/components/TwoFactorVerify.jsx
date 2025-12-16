@@ -9,10 +9,12 @@ export default function TwoFactorVerify() {
   const navigate = useNavigate();
 
   const userId = localStorage.getItem("userId");
+
   const handleVerify = async () => {
     try {
       const data = await verify2FALogin(userId, otp.join(""));
       localStorage.setItem("token", data.token);
+      localStorage.setItem("is2FAEnabled", "true");
       navigate("/dashboard");
     } catch {
       setError("Invalid authentication code");
@@ -21,7 +23,6 @@ export default function TwoFactorVerify() {
 
   return (
     <div className="flex min-h-screen">
-      {/* UI unchanged */}
       <div className="hidden md:flex w-1/2 bg-surface-card items-center justify-center p-12">
         <div>
           <h1 className="text-3xl font-bold text-text-primary mb-4">

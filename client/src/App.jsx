@@ -23,7 +23,7 @@ export default function App() {
         {/* 2FA verification during login */}
         <Route path="/2fa/verify" element={<TwoFactorPage />} />
         <Route path="/2fa/success" element={<TwoFactorSuccessPage />} />
-
+       
       </Routes>
     </BrowserRouter>
   );
